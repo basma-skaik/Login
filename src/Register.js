@@ -13,6 +13,7 @@ import {
 import axios from 'axios';
 
 const loginValidationSchema = yup.object().shape({
+  name: yup.string().required('name is Required'),
   email: yup
     .string()
     .email('Please enter valid email')
@@ -23,38 +24,41 @@ const loginValidationSchema = yup.object().shape({
   //   /(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/,
   //   'Password must have at least 8 character, one number and one special character',
   // ),
+  phone: yup.string().required('phone is Required'),
 });
 
-function LoginSection() {
+function Register() {
   const onSubmitForm = (values, {...rest}) => {
-    axios
-      .post('https://student.valuxapps.com/api/login', {
-        email: values.email,
-        password: values.password,
-      })
+    //another way to sending data in api calls using something called formdata
+    const formData = new FormData();
+    formData.append('name', values.name);
+    formData.append('email', values.email);
+    formData.append('password', values.password);
+    formData.append('phone', values.phone);
+    axios({
+      url: 'https://student.valuxapps.com/api/register',
+      data: formData,
+    })
       .then(response => {
         console.log(response.data);
-        // setAccessToken(response.data?.data?.token);
-        // AsyncStorage.setItem("accessToken", response.data?.data?.token);
-        // setTimeout(() => {
-        //   rest.setSubmitting(false);
-        // }, 3000);
       })
       .catch(error => {
         Alert.alert({error});
         console.log({error});
       });
-    rest.resetForm({email: '', password: ''});
+    rest.resetForm({name: '', email: '', password: '', phone: ''});
   };
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.loginContainer}>
-        <Text>Login Screen</Text>
+        <Text>Register Screen</Text>
         <Formik
           validationSchema={loginValidationSchema}
           initialValues={{
+            name: 'Abdullah',
             email: 'abullah@gmail.com',
             password: '123456',
+            phone: '789456123',
           }}
           onSubmit={onSubmitForm}>
           {({
@@ -66,6 +70,15 @@ function LoginSection() {
             isValid,
           }) => (
             <>
+              <InputField
+                name="name"
+                placeholder="Enter your name"
+                style={styles.textInput}
+                onChangeText={handleChange('name')}
+                onBlur={handleBlur('name')}
+                value={values.name}
+                keyboardType="textInput"
+              />
               <InputField
                 name="email"
                 placeholder="Email Address"
@@ -90,9 +103,17 @@ function LoginSection() {
               {errors.password && touched.password && (
                 <Text style={styles.errorText}>{errors.password}</Text>
               )}
+              <InputField
+                name="phone"
+                placeholder="Enter your phone"
+                style={styles.textInput}
+                onChangeText={handleChange('phone')}
+                onBlur={handleBlur('phone')}
+                value={values.phone}
+              />
               <Button
                 onPress={handleSubmit}
-                title="LOGIN"
+                title="Register"
                 disabled={!isValid}
               />
             </>
@@ -103,7 +124,7 @@ function LoginSection() {
   );
 }
 
-export default LoginSection;
+export default Register;
 
 const styles = StyleSheet.create({
   loginContainer: {
